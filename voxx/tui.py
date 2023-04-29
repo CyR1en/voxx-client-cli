@@ -79,6 +79,7 @@ class Voxx(App):
             return
 
         if message.value == '/exit':
+            connection.close()
             self.exit()
             return
 
