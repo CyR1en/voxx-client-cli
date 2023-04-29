@@ -13,7 +13,18 @@ MessageBar {
 }
 
 NotificationBar {
+    height: auto;
+    content-align: center middle;
+    padding: 0;
+    margin: 2;
     background: $boost;
+    color: $secondary;
+    border: hkey #2966cd;
+}
+
+NotificationBar .message {
+    margin: 0 1 0 1;
+    content-align: center middle;
     color: $secondary;
 }
 

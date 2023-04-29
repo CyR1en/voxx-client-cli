@@ -28,7 +28,7 @@ class UID:
         offset_millis = self._timestamp
         dt = datetime.fromtimestamp(offset_millis / 1000, timezone.utc)
         dt_local = dt.astimezone()
-        return dt_local.strftime("%m/%d/%y %I:%M %p")
+        return dt_local.strftime("%m/%d/%y %#I:%M %p")
 
     def get_ldt(self):
         offset_millis = self._timestamp
@@ -46,8 +46,7 @@ class UID:
         return hash((self._timestamp, self._inc_id))
 
     def __str__(self):
-        dt_local = self.get_ldt()
-        return f"UID: {self.as_long()} ({self._timestamp})({self._inc_id}) (ts: {dt_local.strftime('%m-%d-%Y %H:%M:%S')})"
+        return f"UID: {self.as_long()} ({self._timestamp})({self._inc_id}) (ts: {self.get_timestamp_string()})"
 
     @staticmethod
     def of(uid: int):
@@ -57,12 +56,12 @@ class UID:
 
 
 class User:
-    def __init__(self, uid, username):
+    def __init__(self, uid: UID, username):
         self._uid = uid
         self._username = username
 
     @property
-    def uid(self):
+    def uid(self) -> UID:
         return self._uid
 
     @uid.setter
@@ -82,4 +81,4 @@ class User:
         self._username = username
 
     def __str__(self):
-        return f"{self._username}:{self._uid.asLong()}"
+        return f"{self._username}:{self.uid.as_long()}"
