@@ -11,21 +11,18 @@ pip install voxx-cli
 ## Usage
 
 ```
-voxx-cli --help
+Usage: voxx-cli [options] <arg>
 
-usage: voxx-cli [-h] [-addr ADDR] -user USER
+-h   --help                      show this help message and exit
+-a   --address ADDRESS           voxx server address
+-u   --user USERNAME             username to register as
+-v   --version                   show program's version number and exit
 
-Voxx command line interface client
-
-optional arguments:
-  -h, --help  show this help message and exit
-  -addr ADDR  Voxx server address
-  -user USER  Username to register as
 ```
 
 Currently, there is a Voxx server instance running at `repo.cyr1en.com:8008`.
 To connect to this Voxx server, you can run:
 
 ```
-voxx-cli -addr repo.cyr1en.com:8008 -user <username>
+voxx-cli -a repo.cyr1en.com:8008 -u <username>
 ```

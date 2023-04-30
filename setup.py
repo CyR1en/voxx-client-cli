@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 from io import open
 from os import path
-
+from voxx import __app_name__, __description__, __author__, __voxx_version__
 import pathlib
 
 HERE = pathlib.Path(__file__).parent
@@ -16,18 +16,18 @@ install_requires = [x.strip() for x in all_reqs if
 dependency_links = [x.strip().replace('git+', '') for x in all_reqs if 'git+' not in x]
 
 setup(
-    name='voxx-cli',
-    description='A command line interface client for Voxx',
-    version='1.0.2',
+    name=__app_name__,
+    description=__description__,
+    version=__voxx_version__,
     packages=find_packages(),  # list of all packages
     install_requires=install_requires,
     python_requires='>=3.7',  # any python greater than 2.7
     package_data={'voxx': ['css/*.css']},
-    entry_points='''
+    entry_points=f'''
         [console_scripts]
-        voxx-cli=voxx.__main__:main
+        {__app_name__}=voxx.__main__:main
     ''',
-    author="CyR1en",
+    author=__author__,
     keyword="voxx",
     long_description=README,
     long_description_content_type="text/markdown",
