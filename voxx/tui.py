@@ -7,6 +7,7 @@ from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll, Container
 from textual.widgets import Input, Static
 
+import voxx.model
 from voxx import connection
 from voxx.connection import um_handler, assert_rr, send_message, get_user_list
 from voxx.model import UID, User
@@ -50,7 +51,7 @@ class Voxx(App):
 
     async def after_mount(self):
         msg = "Welcome to Voxx-CLI! This chat is not moderated, please be nice and civil."
-        time = datetime.now().strftime("%m/%d/%y %I:%M %p")
+        time = datetime.now().astimezone().strftime(voxx.model.TIME_FORMAT)
         await self.add_message(msg, time, 'System')
 
     @um_handler
@@ -114,7 +115,7 @@ class Voxx(App):
         """Non-coroutine version of add_notif"""
         asyncio.create_task(self.add_notif(args[0], title=args[1], subtitle=args[2]))
 
-    async def add_message(self, message: str, time: str = datetime.now().strftime("%m/%d/%y %I:%M %p"),
+    async def add_message(self, message: str, time: str = datetime.now().strftime(voxx.model.TIME_FORMAT),
                           sender: str = 'System') -> None:
         """Add message to the result container."""
         bar = MessageBar(sender, message, time)

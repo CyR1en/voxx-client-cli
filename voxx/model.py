@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+TIME_FORMAT = "%m/%d/%y %I:%M %p"
+
 
 class UID:
     TIME_EPOCH = 0x64b62a60
@@ -28,7 +30,7 @@ class UID:
         offset_millis = self._timestamp
         dt = datetime.fromtimestamp(offset_millis / 1000, timezone.utc)
         dt_local = dt.astimezone()
-        return dt_local.strftime("%m/%d/%y %#I:%M %p")
+        return dt_local.strftime(TIME_FORMAT)
 
     def get_ldt(self):
         offset_millis = self._timestamp
