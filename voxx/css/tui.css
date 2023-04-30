@@ -38,7 +38,27 @@ Input {
     width: 100%;
     height: 1;
     padding: 0 1;
-    margin: 0 1 1 1;
+    margin: 0 1 2 1;
+}
+
+Footer {
+    background: $surface-lighten-1;
+    color: $panel-lighten-3;
+}
+
+Footer > .footer--highlight {
+    background: $surface;
+}
+
+Footer > .footer--highlight-key {
+    background: $secondary;
+    text-style: none;
+}
+
+Footer > .footer--key {
+    text-style: bold;
+    color: $panel-lighten-3;
+    background: $surface;
 }
 
 #results {

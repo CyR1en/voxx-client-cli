@@ -4,8 +4,9 @@ from types import SimpleNamespace
 
 import pkg_resources
 from textual.app import App, ComposeResult
+from textual.binding import Binding
 from textual.containers import VerticalScroll, Container
-from textual.widgets import Input, Static
+from textual.widgets import Input, Static, Footer
 
 import voxx.model
 from voxx import connection
@@ -34,6 +35,10 @@ class NotificationBar(Container):
 
 class Voxx(App):
     CSS_PATH = pkg_resources.resource_filename(__name__, "css/tui.css")
+    BINDINGS = [
+        Binding('ctrl+c', "quit", "Quit", show=True, priority=True),
+        Binding('ctrl+l', 'ul', "List users", priority=True)
+    ]
 
     def __int__(self):
         super().__init__()
@@ -43,11 +48,15 @@ class Voxx(App):
         vert.border_title = "Voxx-cli"
         yield vert
         yield Input(id="msg-input", placeholder="Enter Message")
+        yield Footer()
 
     def _on_compose(self) -> None:
         """A coroutine to handle a text changed message."""
         asyncio.create_task(self.after_mount())
         connection.um_conn.set_runner_instance(self)
+
+    def clear_input(self) -> None:
+        self.query_one('#msg-input').action_delete_left_all()
 
     async def after_mount(self):
         msg = "Welcome to Voxx-CLI! This chat is not moderated, please be nice and civil."
@@ -79,14 +88,7 @@ class Voxx(App):
         if not message.value:
             return
 
-        if message.value == '/exit':
-            connection.close()
-            self.exit()
-            return
-
-        if message.value == '/ul':
-            asyncio.create_task(self.get_users())
-            self.clear_input()
+        if not await self.handle_command(message):
             return
 
         if message.value:
@@ -97,12 +99,32 @@ class Voxx(App):
             self.run_worker(self.add_message(msg, sender=user, time=time.get_timestamp_string()))
         self.clear_input()
 
-    def clear_input(self):
-        self.query_one("#msg-input").action_delete_left_all()
+    async def handle_command(self, command: Input.Submitted) -> bool:
+        if command.value == '/exit':
+            await self.action_quit()
+
+        if command.value == '/ul':
+            await self.get_users()
+            self.clear_input()
+            return True
+
+        # If not a command we just don't send this message
+        if command.value.startswith('/'):
+            self.clear_input()
+            return False
+        return True
+
+    async def action_ul(self):
+        await self.get_users()
+
+    async def action_quit(self) -> None:
+        connection.close()
+        await super().action_quit()
 
     async def get_users(self):
         response = get_user_list()
-        names = [user.uname for user in response.body.users]
+        names = [(f'{user.uname} (you)' if user.uname == connection.get_assoc_user().username else user.uname) for user
+                 in response.body.users]
         ul = ', '.join(names)
         asyncio.create_task(self.add_notif(ul, title='Connected users'))
 
