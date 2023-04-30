@@ -106,6 +106,12 @@ def close() -> None:
     um_conn.close()
 
 
+@assert_rr
+def get_assoc_user():
+    global assoc_user
+    return assoc_user
+
+
 def establish_voxx_connection(user: str, addr: tuple):
     global res_req_conn
     global um_conn
