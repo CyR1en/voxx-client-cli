@@ -1,4 +1,3 @@
-import asyncio
 import json
 import socket
 import sys
@@ -16,8 +15,6 @@ console = Console(theme=Theme({
     "warning": "magenta",
     "danger": "bold red"
 }))
-
-loop = asyncio.get_event_loop()
 
 
 class ResReqClient(socket.socket):
@@ -39,9 +36,13 @@ class UMClient(ResReqClient, Thread):
         req = {"request-id": "su", "params": {"main-user": f'{main_user}'}}
         self.request(req)
         self._owning_instance = None
+        self._on_close = None
 
     def set_runner_instance(self, instance):
         self._owning_instance = instance
+
+    def on_close(self, func):
+        self._on_close = func
 
     def run(self):
         try:
@@ -52,7 +53,9 @@ class UMClient(ResReqClient, Thread):
                 if key in UM_HANDLERS:
                     func = UM_HANDLERS[key]
                     func(self._owning_instance, msg)
-        except:
+        except ConnectionResetError:
+            if self._on_close is not None:
+                self._on_close()
             self.close()
 
 
@@ -69,10 +72,13 @@ def um_handler(func):
 
 def assert_rr(func):
     def wrapper(*args, **kwargs):
-        if res_req_conn is None:
-            console.print("Response-Request connection not established!", style="bold red")
-            return
-        return func(*args, **kwargs)
+        try:
+            if res_req_conn is None:
+                console.print("Response-Request connection not established!", style="bold red")
+                return
+            return func(*args, **kwargs)
+        except ConnectionResetError:
+            return None
 
     return wrapper
 

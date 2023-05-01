@@ -54,6 +54,7 @@ class Voxx(App):
         """A coroutine to handle a text changed message."""
         asyncio.create_task(self.after_mount())
         connection.um_conn.set_runner_instance(self)
+        connection.um_conn.on_close(self.on_um_disconnect)
 
     def clear_input(self) -> None:
         self.query_one('#msg-input').action_delete_left_all()
@@ -62,6 +63,10 @@ class Voxx(App):
         msg = "Welcome to Voxx-CLI! This chat is not moderated, please be nice and civil."
         time = datetime.now().astimezone().strftime(voxx.model.TIME_FORMAT)
         await self.add_message(msg, time, 'System')
+
+    def on_um_disconnect(self):
+        self.call_from_thread(self._add_notif, f'Lost connection to the server, try connecting again.',
+                              'Lost connection', None)
 
     @um_handler
     def nu(self, msg: SimpleNamespace) -> None:
@@ -73,10 +78,7 @@ class Voxx(App):
         """Handles new message update message: called from thread-2"""
         sender = User(UID.of(int(msg.body.sender.uid)), msg.body.sender.uname)
         time = UID.of(int(msg.body.message.uid)).get_timestamp_string()
-        try:
-            self.call_from_thread(self._add_msg, msg.body.message.content, sender.username, time)
-        except Exception as e:
-            send_message(f'Exception: {e}')
+        self.call_from_thread(self._add_msg, msg.body.message.content, sender.username, time)
 
     @um_handler
     def ud(self, msg: SimpleNamespace) -> None:
@@ -93,6 +95,9 @@ class Voxx(App):
 
         if message.value:
             response = send_message(message.value)
+            if response is None:
+                await self.add_notif('Not connected to server! Could not send message', 'Not connected')
+                return
             msg = response.body.message.content
             user = connection.assoc_user.username
             time = UID.of(int(response.body.message.uid))
@@ -123,10 +128,13 @@ class Voxx(App):
 
     async def get_users(self):
         response = get_user_list()
+        if response is None:
+            await self.add_notif('Not connected to server! Could not get user list', 'Not connected')
+            return
         names = [(f'{user.uname} (you)' if user.uname == connection.get_assoc_user().username else user.uname) for user
                  in response.body.users]
         ul = ', '.join(names)
-        asyncio.create_task(self.add_notif(ul, title='Connected users'))
+        await self.add_notif(ul, title='Connected users')
 
     async def add_notif(self, message: str, title=None, subtitle=None) -> None:
         bar = NotificationBar(message, title, subtitle)
