@@ -53,7 +53,7 @@ class UMClient(ResReqClient, Thread):
                 if key in UM_HANDLERS:
                     func = UM_HANDLERS[key]
                     func(self._owning_instance, msg)
-        except ConnectionResetError:
+        except (ConnectionResetError, ConnectionAbortedError):
             if self._on_close is not None:
                 self._on_close()
             self.close()
