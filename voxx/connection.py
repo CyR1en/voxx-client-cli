@@ -37,6 +37,8 @@ class UMClient(ResReqClient, Thread):
         self.request(req)
         self._owning_instance = None
         self._on_close = None
+        self.settimeout(None)
+        keep_alive(self)
 
     def set_runner_instance(self, instance):
         self._owning_instance = instance
@@ -57,6 +59,21 @@ class UMClient(ResReqClient, Thread):
             if self._on_close is not None:
                 self._on_close()
             self.close()
+
+
+def keep_alive(sock: socket.socket):
+    os = sys.platform
+    if os == 'win32':
+        sock.ioctl(socket.SIO_KEEPALIVE_VALS, (1, 10000, 3000))
+    elif os == 'linux':
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 1)
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 3)
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 5)
+    elif os == 'darwin':
+        tcp_ka = 0x10
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+        sock.setsockopt(socket.IPPROTO_TCP, tcp_ka, 3)
 
 
 res_req_conn: ResReqClient
