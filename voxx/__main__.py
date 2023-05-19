@@ -74,7 +74,7 @@ def main():
     addr = args.a if hasattr(args, 'a') else args.address
     user = args.u if hasattr(args, 'u') else args.user
     if not re.match(ADDR_RE, addr):
-        console.print(f'[warning]Invalid address: [bold red]{args.addr}[/bold red][/warning]')
+        console.print(f'[warning]Invalid address: [bold red]{args.address}[/bold red][/warning]')
         console.print(f'[italic]Address must be in the form of [bold green]host:port[/bold green][/italic]')
         sys.exit(1)
     if not re.match(UNAME_RE, user):
